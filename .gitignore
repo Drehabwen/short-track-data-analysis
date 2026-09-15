@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Sensitive/local data — never publish
+*.db
+*.sqlite
+*.sqlite3
+*.xml
+*.xls
+*.xlsx
+*.csv
+*.doc
+*.docx
+*.pdf
+*.m4a
+*.mp4
+.env
+.env.*
+*credential*
+*secret*
+*token*
+
+# 生成产物（均可通过 build_all.py 重建）
+*.html
+*.xlsx
+*.csv
+*.json
+*.png
+*.exe
+*.zip
+~$*
+
+# 原始数据（大文件，不入库；新增场次请放回对应目录）
+最大摄氧量/最大摄氧量数据/CPET*.xml
+最大摄氧量/最大摄氧量数据/*.mssperson
+最大摄氧量/最大摄氧量数据/新的最大摄氧量数据/
+心率/*.xlsx
+心率/_重复文件备份/
+统一数据集/
+blood_reports_package_20260726-141357/
+_vizlibs/
+
+# 构建素材中保留的 logo 例外
+!ref_logos/
+!ref_logos/*.png
+!ref_logos/*.jpeg
+ref_logos/image4.png
+ref_logos/image5.png
+ref_logos/image6.png
+ref_logos/image7.jpeg
