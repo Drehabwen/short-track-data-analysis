@@ -1,63 +1,64 @@
-# Python
-__pycache__/
-**/__pycache__/
-*.pyc
-*.egg-info/
+# ===== 依赖与虚拟环境 =====
 .venv/
 venv/
-**/.venv/
-**/venv/
+**/__pycache__/
+*.py[cod]
+node_modules/
+.next/
 
-# Frontend dependencies and build output
-**/node_modules/
-**/.next/
-**/out/
+# ===== 构建产物 =====
+backend/build/
+backend/dist/
+backend/*.spec
+frontend/out/
+frontend/.next/
 
-# Sensitive/local data — never publish
+# ===== 数据库（敏感，绝不入库） =====
 *.db
 *.sqlite
 *.sqlite3
-*.xml
-*.xls
+*.db-wal
+*.db-shm
+blood.db
+
+# ===== 运动员/医疗数据与报告（隐私敏感，绝不入库） =====
 *.xlsx
-*.csv
-*.doc
-*.docx
-*.pdf
-*.m4a
-*.mp4
+*.xls
+outputs/
+0713-血液报告/
+Academic/data/
+data/
+**/summary_*/ 
+# 报告图片与个体数据
+**/血液数据*/
+**/复核编号图片*/
+
+# ===== 私有凭证 / 环境变量 =====
 .env
 .env.*
 !.env.example
-*credential*
-*secret*
-*token*
 
-# 生成产物（均可通过 build_all.py 重建）
-*.html
-*.xlsx
-*.csv
-*.json
-*.png
-*.exe
-*.zip
-~$*
+# ===== 血液报告清单（含敏感路径） =====
+MANIFEST_*.csv
 
-# 原始数据（大文件，不入库；新增场次请放回对应目录）
-最大摄氧量/最大摄氧量数据/CPET*.xml
-最大摄氧量/最大摄氧量数据/*.mssperson
-最大摄氧量/最大摄氧量数据/新的最大摄氧量数据/
-心率/*.xlsx
-心率/_重复文件备份/
-统一数据集/
-blood_reports_package_20260726-141357/
-_vizlibs/
+# ===== 日志与临时 =====
+*.log
+*.tmp
+temp/
+**/tmp/
 
-# 构建素材中保留的 logo 例外
-!ref_logos/
-!ref_logos/*.png
-!ref_logos/*.jpeg
-ref_logos/image4.png
-ref_logos/image5.png
-ref_logos/image6.png
-ref_logos/image7.jpeg
+# ===== 平台 / IDE =====
+.reasonix/
+.sandbox-home/
+.sandbox-tmp/
+.idea/
+.vscode/
+
+# ===== 测试产物 =====
+.pytest_cache/
+coverage/
+*.egg-info/
+
+# ===== 备份与归档（运行时生成，不入库） =====
+data/backups/
+data/archive/

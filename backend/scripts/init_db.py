@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from app.auth import hash_password  # noqa: E402
-from app.config import ROOT_DIR, SEED_DIR  # noqa: E402
+from app.config import ROOT_DIR  # noqa: E402
 from app.database import Base, SessionLocal, engine  # noqa: E402
 from app.models import Analyte, Participant, Sample, User  # noqa: F401, E402
 from app.services.importer import import_visits_csv  # noqa: E402
@@ -91,13 +91,8 @@ def main():
         db.close()
     print(f"示例账号: 新建 {u}，指标配置: 新建 {a}")
 
-    seed_file = SEED_DIR / "blood_visits_curated.csv"
-    if not seed_file.is_file():
-        print("未发现私有种子数据，已跳过运动员数据导入。可在系统启动后导入自己的合规数据。")
-        return
-
     print("导入种子数据...")
-    result = import_visits_csv(seed_file)
+    result = import_visits_csv()
     print(
         f"完成: 新建运动员 {result['participants_created']}, "
         f"新建血样 {result['samples_created']}, 跳过重复 {result['skipped']}"

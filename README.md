@@ -1,8 +1,6 @@
-# SpeedTrack Pro｜短道速滑训练数据分析
+# 短道速滑运动员血液数据分析平台
 
-面向短道速滑教练的本地训练复盘与科研分析工作台。前端运行在 `localhost:3000`，后端运行在 `localhost:8000`，业务数据由本地数据库保存。
-
-> **隐私说明：** 本仓库只发布可审查源码，不含真实运动员姓名、血液/心率/体能/比赛数据、`blood.db`、Excel/CSV、医学报告、安装包或内部种子数据。请只导入已获授权并完成合规处理的数据。
+本地部署的运动员训练监控与科研分析工作台。**数据不出网**——所有数据存储在本机 PostgreSQL，前端图表库本地打包，无任何外部请求。
 
 > **v1.1（短道速滑定制版）**：新增登录与三角色权限（管理员/教练/运动员）、运动员管理、指标参考区间与超标统计、运动员个人数据页。
 
@@ -12,23 +10,10 @@
 |----|------|
 | 前端 | Next.js 15 (React 19) + ECharts（本地打包） |
 | 后端 | FastAPI + SQLAlchemy + JWT 认证 |
-| 数据库 | PostgreSQL（开发）/ SQLite（桌面打包版） |
+| 数据库 | PostgreSQL 18（本地 zip 版，`C:\pgsql18`） |
 | 统计 | scipy（Friedman / Kruskal-Wallis / Wilcoxon + Holm / Spearman） |
 
-## 源码启动
-
-首次运行先准备环境：
-
-```powershell
-Copy-Item .env.example .env
-cd backend
-python -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
-cd ..\frontend
-npm install
-```
-
-请编辑根目录 `.env`，设置数据库密码和随机 `JWT_SECRET`。随后从仓库根目录运行：
+## 快速启动
 
 ```
 .\start.ps1      # 一键启动（PG + 后端 + 前端，自动打开浏览器）
@@ -38,9 +23,7 @@ npm install
 - 前端界面：http://localhost:3000
 - API 文档：http://localhost:8000/docs
 
-## 本地演示账号
-
-执行 `python -m scripts.init_db` 时会创建以下本地演示账号。它们仅用于开发验证，首次部署后必须修改密码。
+## 登录账号（演示）
 
 | 角色 | 账号 | 密码 |
 |------|------|------|
@@ -90,7 +73,7 @@ npm install
 
 - 连接：`postgresql+psycopg://postgres:postgres123@localhost:5432/blood_analysis`
 - 初始化：`cd backend && .\.venv\Scripts\python scripts\init_db.py`
-- 私有种子数据不在本仓库中；初始化脚本在找不到种子文件时会安全跳过数据导入
+- 数据源：`Academic/outputs/clean_analysis_2026-07-21/blood_visits_curated.csv`（162 条校准记录：69 名运动员）
 - PostgreSQL 本体：`C:\pgsql18`（免安装 zip 版，initdb 初始化于 `C:\pgsql18\data`）
   - 启动：`C:\pgsql18\pgsql\bin\pg_ctl.exe -D C:\pgsql18\data -l C:\pgsql18\pg.log start`
   - 停止：`C:\pgsql18\pgsql\bin\pg_ctl.exe -D C:\pgsql18\data stop`
@@ -133,11 +116,11 @@ Phase 1 关键文档：`docs/PRD_PHASE1_RESEARCH_DATA_FOUNDATION.md`（PRD）、
 
 ## 新数据导入
 
-1. 后端 API `POST /api/import/csv`：上传符合字段规范的 CSV
-2. 内部分发版可通过数据管理页导入已授权的本地数据
-3. 导入前请完成去标识化、访问授权和备份
+1. 数据管理页 → "导入内置数据"：重新导入打包内的校准 CSV
+2. 后端 API `POST /api/import/csv`：上传符合 curated 列结构的 CSV
+3. 未来：图片 OCR 提取（二期）
 
 ## 注意
 
-- `.env.example` 中的密码和密钥均为占位符，部署前必须替换
+- PostgreSQL 密码 `postgres123` 仅用于本地开发，正式部署请修改
 - 统计中睾酮低于检测限（`<0.0868`）的值按 censored 处理，不参与数值统计
