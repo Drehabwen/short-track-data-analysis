@@ -1,0 +1,17 @@
+{
+  "name": "blood-analysis-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/coach-workspace.test.mjs",
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000"
+  },
+  "dependencies": {
+    "echarts": "^5.5.1",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

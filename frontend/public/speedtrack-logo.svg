@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">SpeedTrack Pro</title>
+  <desc id="desc">抽象短道冰面与 S 形滑行轨迹标志</desc>
+  <defs>
+    <linearGradient id="ice" x1="30" y1="32" x2="220" y2="220" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7DD3FC"/>
+      <stop offset="1" stop-color="#DFF7FF"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="128" cy="128" rx="91" ry="72" fill="url(#ice)" stroke="#0B1533" stroke-width="12"/>
+  <ellipse cx="128" cy="128" rx="64" ry="45" fill="none" stroke="#FFFFFF" stroke-width="7" opacity=".92"/>
+  <path d="M84 74c38-28 96-21 105 10 8 28-15 42-49 47-35 5-61 14-56 35 6 25 61 30 91 6 10-8 16-18 17-29"
+    fill="none" stroke="#1677FF" stroke-width="25" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M84 74c38-28 96-21 105 10 8 28-15 42-49 47-35 5-61 14-56 35 6 25 61 30 91 6 10-8 16-18 17-29"
+    fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".95"/>
+</svg>

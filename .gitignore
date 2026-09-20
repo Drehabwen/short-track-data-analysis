@@ -1,7 +1,17 @@
 # Python
 __pycache__/
+**/__pycache__/
 *.pyc
 *.egg-info/
+.venv/
+venv/
+**/.venv/
+**/venv/
+
+# Frontend dependencies and build output
+**/node_modules/
+**/.next/
+**/out/
 
 # Sensitive/local data — never publish
 *.db
@@ -18,6 +28,7 @@ __pycache__/
 *.mp4
 .env
 .env.*
+!.env.example
 *credential*
 *secret*
 *token*
