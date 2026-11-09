@@ -85,10 +85,15 @@ def decide(
     monotony: float | None,
     fatigue: int | None = None,
     coverage_days: int = CHRONIC_DAYS,
+    fi: int | None = None,
 ) -> tuple[str, str, int]:
     """返回 (level, reason, suggested_pct)。"""
     if coverage_days < MIN_COVERAGE_DAYS or acwr is None:
         return "unknown", f"慢性负荷历史仅 {coverage_days} 天（<{MIN_COVERAGE_DAYS}），暂不判定", 100
+    if fi is not None and fi >= 70:
+        return "red", f"疲劳指数 {fi}/100（多指标融合）", 0
+    if fi is not None and fi >= 50:
+        return "yellow", f"疲劳指数 {fi}/100，建议降负荷", 60
     if acwr >= 1.5:
         return "red", f"ACWR {acwr:.2f} ≥ 1.5，负荷急增", 0
     if acwr >= 1.3 and (fatigue or 0) >= 8:
@@ -109,9 +114,11 @@ def compute_series(
     fatigue_by_day: dict[date, int] | None = None,
     start: date | None = None,
     end: date | None = None,
+    status_by_day: dict[date, dict] | None = None,
 ) -> list[DayMetrics]:
     """把「按天负荷」计算成逐日指标序列（含缺失日补 0）。"""
     fatigue_by_day = fatigue_by_day or {}
+    status_by_day = status_by_day or {}
     if not daily_loads:
         return []
     lo = start or min(daily_loads)
@@ -136,11 +143,21 @@ def compute_series(
         sd = pstdev(w7) if len(w7) > 1 else 0.0
         monotony = round(mean(w7) / sd, 2) if sd > 0 else None
         strain = round(sum(w7) * monotony, 1) if monotony is not None else None
-        level, reason, pct = decide(acwr, monotony, fatigue_by_day.get(d), cov)
+        subjective = fatigue_by_day.get(d)
+        st = status_by_day.get(d) or {}
+        if subjective is None and st.get("fatigue") is not None:
+            subjective = int(st["fatigue"])
+        mhr_hist = [float(v) for dd, v in sorted(status_by_day.items()) if dd < d and v.get("morning_hr") is not None]
+        mhr_delta = morning_hr_delta(mhr_hist, st.get("morning_hr"))
+        fi = fatigue_index(acwr, monotony, subjective, mhr_delta)
+        level, reason, pct = decide(acwr, monotony, subjective, cov, fi)
         out.append(DayMetrics(
             day=d, load=round(series[i], 1), acute=round(acute, 1), chronic=round(chronic, 1),
             acwr=acwr, monotony=monotony, strain=strain, level=level, reason=reason,
             suggested_pct=pct, coverage_days=cov,
+            extras={"fatigue_index": fi, "subjective": subjective,
+                    "morning_hr_delta": mhr_delta,
+                    "morning_hr": st.get("morning_hr"), "sleep_hours": st.get("sleep_hours")},
         ))
     return out
 
@@ -168,4 +185,48 @@ def summarize(metrics: list[DayMetrics]) -> dict:
         "coverage_days": last.coverage_days,
         "week_load": round(sum(m.load for m in week), 1),
         "week_days": week_days,
+        "fatigue_index": last.extras.get("fatigue_index"),
+        "subjective": last.extras.get("subjective"),
+        "morning_hr": last.extras.get("morning_hr"),
+        "morning_hr_delta": last.extras.get("morning_hr_delta"),
+        "sleep_hours": last.extras.get("sleep_hours"),
     }
+
+
+# ---------------- 疲劳指数（多指标融合） ----------------
+FATIGUE_WEIGHTS = {"acwr": 40, "monotony": 20, "subjective": 25, "morning_hr": 15}
+
+
+def _clamp01(x: float) -> float:
+    return max(0.0, min(1.0, x))
+
+
+def fatigue_index(
+    acwr: float | None,
+    monotony: float | None = None,
+    subjective: int | None = None,
+    morning_hr_delta: float | None = None,
+) -> int:
+    """0-100 疲劳指数。单项异常不会直接把分数拉满，必须多指标叠加。
+
+    ACWR 40 分（1.0 起算，1.5 满）、单调性 20 分（1.5 起算，2.5 满）、
+    主观疲劳 25 分（1-10）、晨脉偏移 15 分（+10bpm 满）。
+    """
+    score = 0.0
+    if acwr is not None:
+        score += _clamp01((acwr - 1.0) / 0.5) * FATIGUE_WEIGHTS["acwr"]
+    if monotony is not None:
+        score += _clamp01((monotony - 1.5) / 1.0) * FATIGUE_WEIGHTS["monotony"]
+    if subjective is not None:
+        score += _clamp01((subjective - 1) / 9.0) * FATIGUE_WEIGHTS["subjective"]
+    if morning_hr_delta is not None:
+        score += _clamp01(morning_hr_delta / 10.0) * FATIGUE_WEIGHTS["morning_hr"]
+    return int(round(score))
+
+
+def morning_hr_delta(history: list[float], current: float | None) -> float | None:
+    """晨脉相对近 7 天均值的偏移（正=偏高）。"""
+    if current is None or not history:
+        return None
+    base = sum(history[-7:]) / len(history[-7:])
+    return round(current - base, 1)

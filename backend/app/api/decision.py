@@ -61,6 +61,19 @@ def _fatigue(db: Session, since: date) -> dict[str, dict[date, int]]:
     return out
 
 
+def _status(db: Session, since: date) -> dict[str, dict[date, dict]]:
+    stmt = select(DailyStatus).where(DailyStatus.status_date >= since)
+    out: dict[str, dict[date, dict]] = defaultdict(dict)
+    for r in db.execute(stmt).scalars().all():
+        if not r.athlete_id or not r.status_date:
+            continue
+        out[r.athlete_id][r.status_date] = {
+            "fatigue": r.fatigue, "morning_hr": r.morning_hr,
+            "sleep_hours": r.sleep_hours, "muscle_soreness": r.muscle_soreness,
+        }
+    return out
+
+
 @router.get("/today")
 def today(
     day: str | None = Query(None, description="基准日期 YYYY-MM-DD，默认取最近一次训练日"),
@@ -75,9 +88,10 @@ def today(
                 "athletes": [], "note": "该时间段暂无训练心率数据，请先导入 hr_sessions"}
 
     fat = _fatigue(db, since)
+    stat = _status(db, since)
     items = []
     for who, series in daily.items():
-        metrics = lm.compute_series(series, fat.get(who), end=anchor)
+        metrics = lm.compute_series(series, fat.get(who), end=anchor, status_by_day=stat.get(who))
         s = lm.summarize(metrics)
         if not s:
             continue
@@ -97,7 +111,8 @@ def athlete(name: str, days: int = 28, db: Session = Depends(get_db)):
     series = daily.get(name)
     if not series:
         raise HTTPException(404, f"未找到运动员 {name} 的训练心率数据")
-    metrics = lm.compute_series(series, _fatigue(db, since).get(name), end=anchor)
+    metrics = lm.compute_series(series, _fatigue(db, since).get(name), end=anchor,
+                                status_by_day=_status(db, since).get(name))
     return {
         "athlete": name,
         "anchor": anchor.isoformat(),
@@ -168,9 +183,10 @@ def weekly(days: int = 14, db: Session = Depends(get_db)):
         team.append(round(sum(series.get(d, 0.0) for series in daily.values()), 1))
         d += timedelta(days=1)
     fat = _fatigue(db, since)
+    stat = _status(db, since)
     alerts = []
     for who, series in daily.items():
-        metrics = lm.compute_series(series, fat.get(who), end=anchor)
+        metrics = lm.compute_series(series, fat.get(who), end=anchor, status_by_day=stat.get(who))
         s = lm.summarize(metrics)
         if s and s["level"] in ("red", "yellow"):
             s["athlete"] = who

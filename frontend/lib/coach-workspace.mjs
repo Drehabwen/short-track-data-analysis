@@ -20,6 +20,7 @@ export const COACH_NAV_GROUPS = Object.freeze([
     items: [
       { href: '/decision', label: '今日决策卡' },
       { href: '/decision/weekly', label: '周负荷' },
+      { href: '/decision/taper', label: '赛前减量' },
     ],
   },
   {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { api } from '@/lib/api';
+import { api, API_BASE_URL } from '@/lib/api';
 import Hint from '@/components/Hint';
 
 const LEVEL_META = {
@@ -41,7 +41,14 @@ export default function DecisionPage() {
           </div>
         </div>
         <div className="page-actions">
+          <button
+            className="btn"
+            onClick={() => window.open(`${API_BASE_URL}/api/decision/export.csv`, '_blank')}
+          >
+            导出训练单
+          </button>
           <Link className="btn ghost" href="/decision/weekly">周负荷 →</Link>
+          <Link className="btn ghost" href="/decision/taper">赛前减量 →</Link>
         </div>
       </div>
 

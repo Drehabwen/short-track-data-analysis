@@ -23,6 +23,8 @@ function AthleteContent() {
   const [error, setError] = useState('');
   const [msg, setMsg] = useState('');
   const [pct, setPct] = useState(100);
+  const [status, setStatus] = useState({ sleep_hours: '', fatigue: '', morning_hr: '' });
+  const [statusMsg, setStatusMsg] = useState('');
 
   useEffect(() => {
     if (!name) return;
@@ -79,6 +81,24 @@ function AthleteContent() {
   const s = data?.summary;
   const meta = LEVEL_META[s?.level] ?? LEVEL_META.unknown;
 
+  const saveStatus = async () => {
+    try {
+      await api.decisionStatus({
+        athlete_name: name,
+        sleep_hours: status.sleep_hours === '' ? null : Number(status.sleep_hours),
+        fatigue: status.fatigue === '' ? null : Number(status.fatigue),
+        morning_hr: status.morning_hr === '' ? null : Number(status.morning_hr),
+      });
+      setStatusMsg('已保存，正在刷新…');
+      const d = await api.decisionAthlete(name);
+      setData(d);
+      setPct(d?.summary?.suggested_pct ?? 100);
+      setStatusMsg('已保存');
+    } catch (e) {
+      setStatusMsg(`保存失败：${e.message}`);
+    }
+  };
+
   const log = async () => {
     if (!s) return;
     try {
@@ -112,7 +132,7 @@ function AthleteContent() {
       {error && <div className="alert danger">{error}</div>}
 
       {s && (
-        <div className="grid cols-4" style={{ marginBottom: 16 }}>
+        <div className="grid" style={{ marginBottom: 16, gridTemplateColumns: 'repeat(5, 1fr)' }}>
           <div className="stat-card" data-tone="warn">
             <div className="stat-label">建议</div>
             <div className="stat-number" style={{ fontSize: 20 }}>
@@ -126,6 +146,10 @@ function AthleteContent() {
           <div className="stat-card">
             <div className="stat-label">单调性</div>
             <div className="stat-number">{s.monotony ?? '—'}</div>
+          </div>
+          <div className="stat-card" data-tone="warn">
+            <div className="stat-label">疲劳指数</div>
+            <div className="stat-number">{s.fatigue_index ?? '—'}</div>
           </div>
           <div className="stat-card">
             <div className="stat-label">本周负荷</div>
@@ -141,6 +165,38 @@ function AthleteContent() {
           <span><i style={{ background: '#1d6f9e' }} />每日负荷</span>
           <span><i style={{ background: '#d97706' }} />ACWR（虚线为 1.3 / 1.5 阈值）</span>
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div className="card-title">
+          <span>今日状态录入</span>
+          <span className="muted">
+            主观 {s?.subjective ?? '—'} · 晨脉 {s?.morning_hr ?? '—'} · 睡眠 {s?.sleep_hours ?? '—'}h
+          </span>
+        </div>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <label style={{ fontSize: 12.5 }}>
+            睡眠(h)
+            <input type="number" step="0.5" value={status.sleep_hours}
+              onChange={(e) => setStatus({ ...status, sleep_hours: e.target.value })}
+              style={{ width: 70, marginLeft: 6, padding: '4px 8px', borderRadius: 6, border: '1px solid #dbe3ee' }} />
+          </label>
+          <label style={{ fontSize: 12.5 }}>
+            主观疲劳(1-10)
+            <input type="number" min={1} max={10} value={status.fatigue}
+              onChange={(e) => setStatus({ ...status, fatigue: e.target.value })}
+              style={{ width: 70, marginLeft: 6, padding: '4px 8px', borderRadius: 6, border: '1px solid #dbe3ee' }} />
+          </label>
+          <label style={{ fontSize: 12.5 }}>
+            晨脉(bpm)
+            <input type="number" value={status.morning_hr}
+              onChange={(e) => setStatus({ ...status, morning_hr: e.target.value })}
+              style={{ width: 70, marginLeft: 6, padding: '4px 8px', borderRadius: 6, border: '1px solid #dbe3ee' }} />
+          </label>
+          <button className="btn" onClick={saveStatus}>保存状态</button>
+          <span className="muted">{statusMsg}</span>
+        </div>
+        <Hint>状态会进入疲劳指数（主观 25 分、晨脉偏移 15 分），与 ACWR、单调性共同决定建议。</Hint>
       </div>
 
       <div className="card">

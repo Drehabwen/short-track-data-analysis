@@ -53,6 +53,10 @@ export const api = {
   decisionLog: (payload) =>
     request('/api/decision/log', { method: 'POST', body: JSON.stringify(payload) }),
   decisionLogs: (limit = 20) => request(`/api/decision/logs?limit=${limit}`),
+  decisionStatus: (payload) =>
+    request('/api/decision/status', { method: 'POST', body: JSON.stringify(payload) }),
+  decisionTaper: (event) => request(`/api/decision/taper${event ? `?event=${event}` : ''}`),
+  decisionExportUrl: () => `${API_BASE}/api/decision/export.csv`,
 
   // 认证
   login: (username, password) =>
