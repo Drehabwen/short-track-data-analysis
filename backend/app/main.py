@@ -11,6 +11,8 @@ from .api import (
     analytes_api,
     auth_api,
     competitions,
+    decision,
+    decision_extra,
     dashboard,
     datahub,
     imports,
@@ -55,6 +57,8 @@ app.include_router(imports.router)
 app.include_router(surveys.router)
 app.include_router(datahub.router)
 app.include_router(competitions.router)
+app.include_router(decision.router)
+app.include_router(decision_extra.router)
 
 
 @app.get("/api/health")
