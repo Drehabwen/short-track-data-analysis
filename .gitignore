@@ -62,3 +62,6 @@ coverage/
 # ===== 备份与归档（运行时生成，不入库） =====
 data/backups/
 data/archive/
+# local test db
+backend/bingheng_test.db
+*.db

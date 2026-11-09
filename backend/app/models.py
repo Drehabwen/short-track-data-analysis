@@ -509,3 +509,21 @@ class Observation(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+class DecisionLog(Base):
+    """教练训练决策留痕（冰衡模块）。"""
+
+    __tablename__ = "decision_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    athlete_id: Mapped[str | None] = mapped_column(String(20), index=True)
+    athlete_name: Mapped[str | None] = mapped_column(String(50))
+    log_date: Mapped[datetime | None] = mapped_column(Date, index=True)
+    level: Mapped[str | None] = mapped_column(String(10))          # green/yellow/red/unknown
+    suggested_pct: Mapped[int | None] = mapped_column(Integer)     # 建议负荷百分比
+    reason: Mapped[str | None] = mapped_column(Text)
+    acwr: Mapped[float | None] = mapped_column(Float)
+    monotony: Mapped[float | None] = mapped_column(Float)
+    decided_by: Mapped[str | None] = mapped_column(String(20))     # coach/admin
+    note: Mapped[str | None] = mapped_column(String(255))
+    created_at: Mapped[datetime | None] = mapped_column(DateTime, default=datetime.utcnow)
