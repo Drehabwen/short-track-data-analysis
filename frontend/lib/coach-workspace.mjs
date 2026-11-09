@@ -16,6 +16,13 @@ export const COACH_NAV_GROUPS = Object.freeze([
     ],
   },
   {
+    label: '训练决策',
+    items: [
+      { href: '/decision', label: '今日决策卡' },
+      { href: '/decision/weekly', label: '周负荷' },
+    ],
+  },
+  {
     label: '运动表现',
     items: [
       { href: '/fitness', label: '专项体能' },

@@ -47,6 +47,13 @@ async function request(path, options = {}) {
 }
 
 export const api = {
+  decisionToday: (day) => request(`/api/decision/today${day ? `?day=${day}` : ''}`),
+  decisionWeekly: (days = 14) => request(`/api/decision/weekly?days=${days}`),
+  decisionAthlete: (name) => request(`/api/decision/athlete/${encodeURIComponent(name)}`),
+  decisionLog: (payload) =>
+    request('/api/decision/log', { method: 'POST', body: JSON.stringify(payload) }),
+  decisionLogs: (limit = 20) => request(`/api/decision/logs?limit=${limit}`),
+
   // 认证
   login: (username, password) =>
     request('/api/auth/login', {

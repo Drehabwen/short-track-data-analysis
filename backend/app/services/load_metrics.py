@@ -151,13 +151,15 @@ def summarize(metrics: list[DayMetrics]) -> dict:
         return {}
     last = metrics[-1]
     week = metrics[-7:]
+    week_days = len([m for m in week if m.load > 0])
+    monotony = last.monotony if week_days >= 3 else None
     return {
         "date": last.day.isoformat(),
         "load": last.load,
         "acute": last.acute,
         "chronic": last.chronic,
         "acwr": last.acwr,
-        "monotony": last.monotony,
+        "monotony": monotony,
         "strain": last.strain,
         "level": last.level,
         "level_text": LEVEL_TEXT.get(last.level, last.level),
@@ -165,5 +167,5 @@ def summarize(metrics: list[DayMetrics]) -> dict:
         "suggested_pct": last.suggested_pct,
         "coverage_days": last.coverage_days,
         "week_load": round(sum(m.load for m in week), 1),
-        "week_days": len([m for m in week if m.load > 0]),
+        "week_days": week_days,
     }

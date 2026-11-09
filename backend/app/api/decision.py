@@ -152,3 +152,28 @@ def list_logs(limit: int = 50, db: Session = Depends(get_db)):
          "decided_by": r.decided_by}
         for r in rows
     ]}
+
+@router.get("/weekly")
+def weekly(days: int = 14, db: Session = Depends(get_db)):
+    """近 N 天全队负荷曲线 + 超阈名单。"""
+    anchor = _anchor(db)
+    span = max(7, min(days, 42))
+    since = anchor - timedelta(days=WINDOW_DAYS)   # 计算窗口固定 45 天，保证与今日卡口径一致
+    daily = _collect(db, since)
+    chart_from = anchor - timedelta(days=span - 1)
+    d = chart_from
+    day_list, team = [], []
+    while d <= anchor:
+        day_list.append(d.isoformat())
+        team.append(round(sum(series.get(d, 0.0) for series in daily.values()), 1))
+        d += timedelta(days=1)
+    fat = _fatigue(db, since)
+    alerts = []
+    for who, series in daily.items():
+        metrics = lm.compute_series(series, fat.get(who), end=anchor)
+        s = lm.summarize(metrics)
+        if s and s["level"] in ("red", "yellow"):
+            s["athlete"] = who
+            alerts.append(s)
+    alerts.sort(key=lambda x: (0 if x["level"] == "red" else 1, -(x.get("acwr") or 0)))
+    return {"anchor": anchor.isoformat(), "days": day_list, "team_load": team, "alerts": alerts}
